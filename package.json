@@ -4,7 +4,8 @@
   "description": "Сервер для сайта \"То место\"",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "author": "Mun Dmitry",
   "license": "ISC",
@@ -16,10 +17,10 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-react": "^7.20.3",
-    "inquirer": "^7.3.3",
     "nodemon": "^2.0.4"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "fs": "0.0.1-security"
   }
 }
