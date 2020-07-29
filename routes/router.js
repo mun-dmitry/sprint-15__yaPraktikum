@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const { doesUserExist, sendUser, sendUsers, noSuchAddress, sendCards } = require('./routes.js');
+const { doesUserExist, sendUser, sendUsers, noSuchAddress } = require('./routes.js');
+const sendCards = require('./cards.js');
 
 router.get('/users', sendUsers);
 router.get('/cards', sendCards);

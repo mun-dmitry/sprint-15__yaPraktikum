@@ -1,5 +1,4 @@
 const users = require('../data/users.json');
-const cards = require('../data/cards.json');
 
 const doesUserExist = (req, res, next) => {
   if (!users.some(user => {
@@ -27,14 +26,9 @@ const sendUsers = (req, res) => {
 	res.send(users);
 };
 
-const sendCards = (req, res) => {
-	res.send(cards);
-};
-
 module.exports = {
 	doesUserExist,
 	sendUser,
 	sendUsers,
 	noSuchAddress,
-	sendCards
 }
