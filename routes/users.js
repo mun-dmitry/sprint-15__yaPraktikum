@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const dataPath = path.resolve('./data/users.json');
 
-const doesUserExist = (req, res, next) => {
+const sendUser = (req, res) => {
 	fs.promises.readFile(dataPath, 'utf-8')
 		.then((data) => {
 			const users = JSON.parse(data);
@@ -12,19 +12,6 @@ const doesUserExist = (req, res, next) => {
 				res.status(404).send({ "message": "Нет пользователя с таким id" });
 				return;
 			}
-		})
-		.catch((err) => {
-			console.log(err);
-			res.status(500).send({ "message": "Internal server error" });
-		});
-
-  next();
-};
-
-const sendUser = (req, res) => {
-	fs.promises.readFile(dataPath, 'utf-8')
-		.then((data) => {
-			const users = JSON.parse(data);
 			const user = users.find(user => {
 				return user._id === req.params.id;
 			})
@@ -49,6 +36,5 @@ const sendUsers = (req, res) => {
 
 module.exports = {
 	sendUsers,
-	doesUserExist,
 	sendUser
 };
