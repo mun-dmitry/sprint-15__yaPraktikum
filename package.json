@@ -1,8 +1,8 @@
 {
   "name": "sprint-12__yapraktikum",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "Сервер для сайта \"То место\"",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js"

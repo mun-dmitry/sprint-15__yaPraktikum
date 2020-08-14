@@ -11,7 +11,13 @@ const sendUsers = (req, res) => {
 
 const sendUserById = (req, res) => {
 	User.findById(req.params.userId)
-		.then(user => res.send({ data: user }))
+		.then(user => {
+			if (!user) {
+				res.status(404).send({ message: 'User not found'});
+				return;
+			};
+			res.send({ data: user })
+		})
 		.catch((err) => {
 			console.log(err);
 			res.status(500).send({ message: 'Internal server error' })
@@ -24,6 +30,53 @@ const createUser = (req, res) => {
 		.then(user => res.send({ data: user }))
 		.catch((err) => {
 			console.log(err);
+			res.status(400).send({ message: err._message })
+		});
+};
+
+const updateUser = (req, res) => {
+	const { name, about } = req.body;
+	User.findByIdAndUpdate(req.user._id,
+		{
+			name: name,
+			about: about
+		},
+		{
+			new: true,
+			runValidators: true,
+		})
+		.then(user => {
+			if (!user) {
+				res.status(404).send({ message: 'User not found'});
+				return;
+			};
+			res.send({ data: user })
+		})
+		.catch((err) => {
+			console.log(err);
+			res.status(500).send({ message: 'Internal server error' })
+		});
+};
+
+const updateAvatar = (req, res) => {
+	const { avatar } = req.body;
+	User.findByIdAndUpdate(req.user._id,
+		{
+			avatar: avatar
+		},
+		{
+			new: true,
+			runValidators: true,
+		})
+		.then(user => {
+			if (!user) {
+				res.status(404).send({ message: 'User not found'});
+				return;
+			};
+			res.send({ data: user })
+		})
+		.catch((err) => {
+			console.log(err);
 			res.status(500).send({ message: 'Internal server error' })
 		});
 };
@@ -31,5 +84,7 @@ const createUser = (req, res) => {
 module.exports = {
 	sendUsers,
 	sendUserById,
-	createUser
+	createUser,
+	updateUser,
+	updateAvatar
 };
