@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const sendCards = require('./cards.js');
-const { sendUsers, sendUser } = require('./users.js');
+// const { sendUsers, sendUser } = require('./users.js');
+const { sendUsers, sendUserById, createUser } = require('../controllers/users');
 
 const noSuchAddress = (req, res) => {
 	res.status(404);
@@ -9,7 +10,8 @@ const noSuchAddress = (req, res) => {
 
 router.get('/users', sendUsers);
 router.get('/cards', sendCards);
-router.get('/users/:id', sendUser);
+router.get('/users/:userId', sendUserById);
+router.post('/users', createUser);
 router.get('*', noSuchAddress);
 
 module.exports = router;
