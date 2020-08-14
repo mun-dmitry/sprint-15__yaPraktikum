@@ -15,7 +15,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 })
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res, next) => {
+	req.user = {
+			_id: '5f364f7677896926601f203e'
+	};
+
+	next();
+});
 app.use('/', router);
 
 app.listen(PORT);
