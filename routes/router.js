@@ -1,6 +1,10 @@
 const router = require('express').Router();
-const { sendUsers, sendUserById, createUser, updateUser, updateAvatar } = require('../controllers/users');
-const { sendCards, createCard, deleteCard, likeCard, dislikeCard } = require('../controllers/cards');
+const {
+  sendUsers, sendUserById, createUser, updateUser, updateAvatar,
+} = require('../controllers/users');
+const {
+  sendCards, createCard, deleteCard, likeCard, dislikeCard,
+} = require('../controllers/cards');
 
 router.get('/users', sendUsers);
 router.get('/users/:userId', sendUserById);
@@ -15,7 +19,7 @@ router.put('/cards/:cardId/likes', likeCard);
 router.delete('/cards/:cardId/likes', dislikeCard);
 
 const noSuchAddress = (req, res) => {
-	res.status(404).send({ "message": "Запрашиваемый ресурс не найден" });
+  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 };
 
 router.use('*', noSuchAddress);
