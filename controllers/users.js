@@ -4,7 +4,6 @@ const sendUsers = (req, res) => {
 	User.find({})
 		.then(users => res.send({ data: users }))
 		.catch((err) => {
-			console.log(err);
 			res.status(500).send({ message: 'Internal server error' })
 		});
 };
@@ -19,8 +18,11 @@ const sendUserById = (req, res) => {
 			res.send({ data: user })
 		})
 		.catch((err) => {
-			console.log(err);
-			res.status(500).send({ message: 'Internal server error' })
+			if (err.name == 'CastError') {
+				res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
+				return;
+			};
+			res.status(500).send({ message: 'Internal server error' });
 		});
 };
 
@@ -29,8 +31,11 @@ const createUser = (req, res) => {
 	User.create({ name, about, avatar })
 		.then(user => res.send({ data: user }))
 		.catch((err) => {
-			console.log(err);
-			res.status(400).send({ message: err._message })
+			if (err.name == 'ValidationError') {
+				res.status(400).send({ message: err.message });
+				return;
+			};
+			res.status(500).send({ message: 'Internal server error' })
 		});
 };
 
@@ -53,7 +58,10 @@ const updateUser = (req, res) => {
 			res.send({ data: user })
 		})
 		.catch((err) => {
-			console.log(err);
+			if (err.name == 'ValidationError') {
+				res.status(400).send({ message: err.message });
+				return;
+			};
 			res.status(500).send({ message: 'Internal server error' })
 		});
 };
@@ -76,8 +84,11 @@ const updateAvatar = (req, res) => {
 			res.send({ data: user })
 		})
 		.catch((err) => {
-			console.log(err);
-			res.status(500).send({ message: 'Internal server error' })
+			if (err.name == 'ValidationError') {
+				res.status(400).send({ message: err.message });
+				return;
+			};
+			res.status(500).send({ message: 'Internal server error' });
 		});
 };
 

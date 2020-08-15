@@ -4,7 +4,6 @@ const sendCards = (req, res) => {
 	Card.find({})
 		.then(cards => res.send({ data: cards }))
 		.catch((err) => {
-			console.log(err);
 			res.status(500).send({ message: 'Internal server error' });
 		});
 };
@@ -15,8 +14,11 @@ const createCard = (req, res) => {
 	Card.create({ name, link, owner })
 		.then(card => res.send({ data: card }))
 		.catch((err) => {
-			console.log(err);
-			res.status(400).send({ message: err._message });
+			if (err.name == 'ValidationError') {
+				res.status(400).send({ message: err.message });
+				return;
+			};
+			res.status(500).send({ message: 'Internal server error' });
 		});
 };
 
@@ -30,7 +32,10 @@ const deleteCard = (req, res) => {
 			res.send({ data: card });
 		})
 		.catch((err) => {
-			console.log(err);
+			if (err.name == 'CastError') {
+				res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
+				return;
+			};
 			res.status(500).send({ message: 'Internal server error' });
 		});
 };
@@ -48,7 +53,10 @@ const likeCard = (req, res) => {
 			res.send({ data: card });
 		})
 		.catch((err) => {
-			console.log(err);
+			if (err.name == 'CastError') {
+				res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
+				return;
+			};
 			res.status(500).send({ message: 'Internal server error' });
 		});
 };
@@ -66,7 +74,10 @@ const dislikeCard = (req, res) => {
 			res.send({ data: card });
 		})
 		.catch((err) => {
-			console.log(err);
+			if (err.name == 'CastError') {
+				res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
+				return;
+			};
 			res.status(500).send({ message: 'Internal server error' });
 		});
 };
