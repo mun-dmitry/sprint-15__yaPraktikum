@@ -7,6 +7,12 @@ const urlValidator = [
     message: 'supposed to get a valid URL',
   }),
 ];
+const emailValidator = [
+  validate({
+    validator: 'isEmail',
+    message: 'supposed to get a valid E-mail',
+  }),
+];
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -25,6 +31,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: urlValidator,
+  },
+  email: {
+    type: String,
+    required: true,
+    validate: emailValidator,
+  },
+  password: {
+    type: String,
+    required: true,
   },
 });
 
