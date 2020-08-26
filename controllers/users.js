@@ -108,7 +108,7 @@ const login = (req, res) => {
     email,
     password,
   } = req.body;
-  return User.findUserByCredentials( email, password )
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
