@@ -10,7 +10,7 @@
 - MongoDB
 ## Инструкция по запуску проекта
 1. Клонируйте проект на свой ПК командой
-`git clone https://github.com/mun-dmitry/sprint-13__yaPraktikum`
+`git clone https://github.com/mun-dmitry/sprint-14__yaPraktikum`
 2. Установите зависимости
 `npm install`
 3. Работайте с проектом

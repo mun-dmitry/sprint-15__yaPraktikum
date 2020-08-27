@@ -23,13 +23,20 @@ const createCard = (req, res) => {
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: 'Card not found' });
         return;
+      } if (card.owner === req.user._id) {
+        Card.findByIdAndRemove(req.params.cardId)
+          .then((removedCard) => res.send({ data: removedCard }))
+          .catch(() => {
+            res.status(500).send({ message: 'Internal server error' });
+          });
+      } else {
+        res.status(403).send({ message: 'Only owner can delete card' });
       }
-      res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {

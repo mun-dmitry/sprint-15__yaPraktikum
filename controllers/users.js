@@ -42,6 +42,10 @@ const createUser = (req, res) => {
     }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
+      if (err.name === 'MongoError') {
+        res.status(400).send({ message: `Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.` });
+        return;
+      }
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
         return;

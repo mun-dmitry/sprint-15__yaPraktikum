@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-  const { cookie } = req.headers;
-  if (!cookie || !cookie.startsWith('jwt=')) {
+  const { authorization } = req.headers;
+  if (!authorization || !authorization.startsWith('Bearer ')) {
     return res.status(401).send({ message: 'Authorization required' });
   }
-  const token = cookie.replace('jwt=', '');
+  const token = authorization.replace('Bearer ', '');
   let payload;
 
   try {
@@ -14,5 +14,5 @@ module.exports = (req, res, next) => {
     return res.status(401).send({ message: 'Authorization required' });
   }
   req.user = payload;
-  next();
-}
+  return next();
+};
