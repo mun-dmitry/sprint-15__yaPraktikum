@@ -28,29 +28,51 @@ const sendUserById = (req, res) => {
     });
 };
 
+const validatePassword = (password) => {
+  const passwordRegExp = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})');
+  return passwordRegExp.test(password);
+};
+
 const createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
-    }))
-    .then((user) => res.send({ data: user }))
+    .then((hash) => {
+      if (!validatePassword(password)) {
+        const e = new Error('Password has to be at least 8 characters, including at least 1 digit character, 1 lowercase alphabetic character and 1 uppercase alphabetic character. Password can contain only alphanumeric characters');
+        e.name = 'PasswordValidationError';
+        throw e;
+      }
+      return User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      });
+    })
+    .then((user) => {
+      User.findById(user._id)
+        .then((createdUser) => res.send({ data: createdUser }))
+        .catch(() => {
+          res.status(500).send({ message: 'Internal2 server error' });
+        });
+    })
     .catch((err) => {
+      if (err.name === 'PasswordValidationError') {
+        res.status(400).send({ message: err.message });
+        return;
+      }
       if (err.name === 'MongoError') {
-        res.status(400).send({ message: `Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.` });
+        res.status(409).send({ message: `Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.` });
         return;
       }
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
         return;
       }
-      res.status(500).send({ message: 'Internal server error' });
+      res.status(500).send({ message: 'Internal1 server error' });
     });
 };
 
@@ -114,9 +136,10 @@ const login = (req, res) => {
   } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      const { JWT_SECRET } = process.env;
       const token = jwt.sign(
         { _id: user._id },
-        'secret-key',
+        JWT_SECRET,
         { expiresIn: '7d' },
       );
       res.cookie('jwt', token, {
