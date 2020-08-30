@@ -9,7 +9,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    const { JWT_SECRET } = process.env;
+    const { JWT_SECRET = 'dev-key' } = process.env;
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
     return res.status(401).send({ message: 'Authorization required' });
