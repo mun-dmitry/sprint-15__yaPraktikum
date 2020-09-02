@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const {
-  sendUsers, sendUserById, createUser, updateUser, updateAvatar,
+  sendUsers, sendUserById, updateUser, updateAvatar,
 } = require('../controllers/users');
 const {
   sendCards, createCard, deleteCard, likeCard, dislikeCard,
@@ -8,7 +8,6 @@ const {
 
 router.get('/users', sendUsers);
 router.get('/users/:userId', sendUserById);
-router.post('/users', createUser);
 router.patch('/users/me', updateUser);
 router.patch('/users/me/avatar', updateAvatar);
 
