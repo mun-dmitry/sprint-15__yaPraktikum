@@ -1,30 +1,30 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const ConflictError = require('../errors/ConflictError');
 
-const sendUsers = (req, res) => {
+const sendUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      res.status(500).send({ message: 'Internal server error' });
-    });
+    .catch(next);
 };
 
-const sendUserById = (req, res) => {
+const sendUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
-        return;
+        next(new BadRequestError(`${err.value} is not a valid ObjectId`));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      next(err);
     });
 };
 
@@ -33,7 +33,7 @@ const validatePassword = (password) => {
   return passwordRegExp.test(password);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -55,28 +55,23 @@ const createUser = (req, res) => {
     .then((user) => {
       User.findById(user._id)
         .then((createdUser) => res.send({ data: createdUser }))
-        .catch(() => {
-          res.status(500).send({ message: 'Internal2 server error' });
-        });
+        .catch(next);
     })
     .catch((err) => {
       if (err.name === 'PasswordValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        next(new BadRequestError(err.message));
       }
       if (err.name === 'MongoError') {
-        res.status(409).send({ message: `Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.` });
-        return;
+        next(new ConflictError(`Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.`));
       }
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        next(new BadRequestError(err.message));
       }
-      res.status(500).send({ message: 'Internal1 server error' });
+      next(err);
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id,
     {
@@ -89,21 +84,19 @@ const updateUser = (req, res) => {
     })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        next(new BadRequestError(err.message));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      next(err);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id,
     {
@@ -115,21 +108,19 @@ const updateAvatar = (req, res) => {
     })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        next(new BadRequestError(err.message));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const {
     email,
     password,
@@ -149,7 +140,10 @@ const login = (req, res) => {
         .end();
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      if (err.name === 'WrongCredentialsError') {
+        next(new UnauthorizedError(err.message));
+      }
+      next(err);
     });
 };
 

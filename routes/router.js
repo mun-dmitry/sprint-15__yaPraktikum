@@ -5,6 +5,7 @@ const {
 const {
   sendCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/cards');
+const NotFoundError = require('../errors/NotFoundError');
 
 router.get('/users', sendUsers);
 router.get('/users/:userId', sendUserById);
@@ -17,8 +18,9 @@ router.delete('/cards/:cardId', deleteCard);
 router.put('/cards/:cardId/likes', likeCard);
 router.delete('/cards/:cardId/likes', dislikeCard);
 
-const noSuchAddress = (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+const noSuchAddress = (req, res, next) => {
+  const error = new NotFoundError('Requested URL not found');
+  next(error);
 };
 
 router.use('*', noSuchAddress);
