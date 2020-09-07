@@ -89,6 +89,9 @@ const updateUser = (req, res, next) => {
       res.send({ data: user });
     })
     .catch((err) => {
+      if (err.name === 'MongoError') {
+        next(new ConflictError(`Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.`));
+      }
       if (err.name === 'ValidationError') {
         next(new BadRequestError(err.message));
       }
