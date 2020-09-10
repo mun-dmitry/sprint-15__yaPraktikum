@@ -10,7 +10,7 @@
 - MongoDB
 ## Инструкция по запуску проекта
 1. Клонируйте проект на свой ПК командой
-`git clone https://github.com/mun-dmitry/sprint-14__yaPraktikum`
+`git clone https://github.com/mun-dmitry/sprint-15__yaPraktikum`
 2. Установите зависимости
 `npm install`
 3. Работайте с проектом
@@ -18,5 +18,7 @@
 `npm run start`
 - Запуск сервера в режиме разработки
 `npm run dev`
-4. Сайт проекта
+## Сайт проекта
+IP сервера `130.193.50.208`
+
 [Mesto](https://yaprmestoapp.gq)
