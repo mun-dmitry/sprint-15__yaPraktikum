@@ -6,6 +6,8 @@ const BadRequestError = require('../errors/BadRequestError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const ConflictError = require('../errors/ConflictError');
 
+const { JWT_SECRET = 'dev-key' } = process.env;
+
 const sendUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
@@ -130,7 +132,6 @@ const login = (req, res, next) => {
   } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const { JWT_SECRET = 'dev-key' } = process.env;
       const token = jwt.sign(
         { _id: user._id },
         JWT_SECRET,

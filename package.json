@@ -1,6 +1,6 @@
 {
   "name": "sprint-15__yapraktikum",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Сервер для сайта \"То место\"",
   "main": "app.js",
   "scripts": {
