@@ -9,6 +9,7 @@ const {
   sendCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/cards');
 const NotFoundError = require('../errors/NotFoundError');
+const urlValidationHelper = require('../middlewares/urlValidationHelper');
 
 router.get('/users', sendUsers);
 
@@ -27,7 +28,7 @@ router.patch('/users/me', celebrate({
 
 router.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().uri().required(),
+    avatar: Joi.string().uri().required().custom(urlValidationHelper, 'custom URL validation'),
   }),
 }), updateAvatar);
 
@@ -36,7 +37,7 @@ router.get('/cards', sendCards);
 router.post('/cards', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().uri(),
+    link: Joi.string().required().uri().custom(urlValidationHelper, 'custom URL validation'),
   }),
 }), createCard);
 

@@ -10,6 +10,7 @@ const router = require('./routes/router.js');
 const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth.js');
 const { requestLogger, errorLogger } = require('./middlewares/logger.js');
+const urlValidationHelper = require('./middlewares/urlValidationHelper');
 
 const { PORT = 3000 } = process.env;
 
@@ -46,7 +47,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().uri().required(),
+    avatar: Joi.string().uri().required().custom(urlValidationHelper, 'custom URL validation'),
     email: Joi.string().email().required(),
     password: Joi.string().required().min(8),
   }),
