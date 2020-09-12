@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const validate = require('mongoose-validator');
 const bcrypt = require('bcryptjs');
 
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const ConflictError = require('../errors/ConflictError');
+
 const urlValidator = [
   validate({
     validator: 'isURL',
@@ -48,11 +51,10 @@ const userSchema = new mongoose.Schema({
 });
 
 // eslint-disable-next-line func-names
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function (email, password, next) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      const error = new Error('Wrong email or password');
-      error.name = 'WrongCredentialsError';
+      const error = new UnauthorizedError('Wrong email or password');
       if (!user) {
         throw error;
       }
@@ -63,7 +65,24 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           }
           return user;
         });
-    });
+    })
+    .catch(next);
+};
+
+// eslint-disable-next-line func-names
+userSchema.statics.checkDuplicatingFields = function (name, email, next) {
+  return this.findOne({ $or: [{ name }, { email }] })
+    .then((user) => {
+      if (user) {
+        if (user.name === name) {
+          throw new ConflictError(`User with name '${user.name}' already exists. Please enter another username`);
+        }
+        if (user.email === email) {
+          throw new ConflictError(`User with email '${user.email}' already exists. Please enter another email`);
+        }
+      }
+    })
+    .catch(next);
 };
 
 module.exports = mongoose.model('user', userSchema);

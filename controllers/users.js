@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
 const ConflictError = require('../errors/ConflictError');
 
 const { JWT_SECRET = 'dev-key' } = process.env;
@@ -39,38 +38,28 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10)
-    .then((hash) => {
-      if (!validatePassword(password)) {
-        const e = new Error('Password has to be at least 8 characters, including at least 1 digit character, 1 lowercase alphabetic character and 1 uppercase alphabetic character. Password can contain only alphanumeric characters');
-        e.name = 'PasswordValidationError';
-        throw e;
-      }
-      return User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      });
+  return User.checkDuplicatingFields(name, email)
+    .then(() => {
+      bcrypt.hash(password, 10)
+        .then((hash) => {
+          if (!validatePassword(password)) {
+            throw new BadRequestError('Password has to be at least 8 characters, including at least 1 digit character, 1 lowercase alphabetic character and 1 uppercase alphabetic character. Password can contain only alphanumeric characters');
+          }
+          return User.create({
+            name,
+            about,
+            avatar,
+            email,
+            password: hash,
+          });
+        })
+        .then((user) => {
+          User.findById(user._id)
+            .then((createdUser) => res.send({ data: createdUser }))
+            .catch(next);
+        });
     })
-    .then((user) => {
-      User.findById(user._id)
-        .then((createdUser) => res.send({ data: createdUser }))
-        .catch(next);
-    })
-    .catch((err) => {
-      if (err.name === 'PasswordValidationError') {
-        next(new BadRequestError(err.message));
-      }
-      if (err.name === 'MongoError') {
-        next(new ConflictError(`Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.`));
-      }
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(err.message));
-      }
-      next(err);
-    });
+    .catch(next);
 };
 
 const updateUser = (req, res, next) => {
@@ -143,12 +132,7 @@ const login = (req, res, next) => {
       })
         .end();
     })
-    .catch((err) => {
-      if (err.name === 'WrongCredentialsError') {
-        next(new UnauthorizedError(err.message));
-      }
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports = {
