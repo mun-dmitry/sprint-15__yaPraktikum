@@ -1,6 +1,6 @@
 {
-  "name": "sprint-14__yapraktikum",
-  "version": "0.0.13",
+  "name": "sprint-15__yapraktikum",
+  "version": "0.0.15",
   "description": "Сервер для сайта \"То место\"",
   "main": "app.js",
   "scripts": {
@@ -18,12 +18,17 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "celebrate": "^12.2.0",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-winston": "^4.0.5",
+    "joi-objectid": "^3.0.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.28",
     "mongoose-validator": "^2.1.0",
-    "validator": "^13.1.1"
+    "path": "^0.12.7",
+    "validator": "^13.1.1",
+    "winston": "^3.3.3"
   }
 }

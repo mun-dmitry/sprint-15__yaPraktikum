@@ -1,30 +1,31 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
 
-const sendUsers = (req, res) => {
+const { JWT_SECRET = 'dev-key' } = process.env;
+
+const sendUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      res.status(500).send({ message: 'Internal server error' });
-    });
+    .catch(next);
 };
 
-const sendUserById = (req, res) => {
+const sendUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: `${err.value} is not a valid ObjectId` });
-        return;
+        next(new BadRequestError(`${err.value} is not a valid ObjectId`));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      next(err);
     });
 };
 
@@ -33,50 +34,35 @@ const validatePassword = (password) => {
   return passwordRegExp.test(password);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10)
-    .then((hash) => {
-      if (!validatePassword(password)) {
-        const e = new Error('Password has to be at least 8 characters, including at least 1 digit character, 1 lowercase alphabetic character and 1 uppercase alphabetic character. Password can contain only alphanumeric characters');
-        e.name = 'PasswordValidationError';
-        throw e;
-      }
-      return User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      });
-    })
-    .then((user) => {
-      User.findById(user._id)
-        .then((createdUser) => res.send({ data: createdUser }))
-        .catch(() => {
-          res.status(500).send({ message: 'Internal2 server error' });
+  return User.checkDuplicatingFields(name, email)
+    .then(() => {
+      bcrypt.hash(password, 10)
+        .then((hash) => {
+          if (!validatePassword(password)) {
+            throw new BadRequestError('Password has to be at least 8 characters, including at least 1 digit character, 1 lowercase alphabetic character and 1 uppercase alphabetic character. Password can contain only alphanumeric characters');
+          }
+          return User.create({
+            name,
+            about,
+            avatar,
+            email,
+            password: hash,
+          });
+        })
+        .then((user) => {
+          User.findById(user._id)
+            .then((createdUser) => res.send({ data: createdUser }))
+            .catch(next);
         });
     })
-    .catch((err) => {
-      if (err.name === 'PasswordValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
-      }
-      if (err.name === 'MongoError') {
-        res.status(409).send({ message: `Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.` });
-        return;
-      }
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
-      }
-      res.status(500).send({ message: 'Internal1 server error' });
-    });
+    .catch(next);
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id,
     {
@@ -89,21 +75,22 @@ const updateUser = (req, res) => {
     })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+      if (err.name === 'MongoError') {
+        next(new ConflictError(`Supposed to get unique name and email. ${JSON.stringify(err.keyValue)} already exists.`));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(err.message));
+      }
+      next(err);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id,
     {
@@ -115,28 +102,25 @@ const updateAvatar = (req, res) => {
     })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'User not found' });
-        return;
+        throw new NotFoundError('User not found');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-        return;
+        next(new BadRequestError(err.message));
       }
-      res.status(500).send({ message: 'Internal server error' });
+      next(err);
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const {
     email,
     password,
   } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const { JWT_SECRET = 'dev-key' } = process.env;
       const token = jwt.sign(
         { _id: user._id },
         JWT_SECRET,
@@ -148,9 +132,7 @@ const login = (req, res) => {
       })
         .end();
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports = {
