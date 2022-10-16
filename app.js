@@ -14,6 +14,7 @@ const { login, createUser } = require('./controllers/users.js');
 const auth = require('./middlewares/auth.js');
 const { requestLogger, errorLogger } = require('./middlewares/logger.js');
 const urlValidationHelper = require('./middlewares/urlValidationHelper');
+const { sendCards } = require('./controllers/cards');
 
 const { PORT = 3000 } = process.env;
 const limiter = rateLimit({
@@ -40,11 +41,7 @@ app.use(cookieParser());
 app.use(requestLogger);
 app.use(cors({ credentials: true }));
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
+app.get('/cards', sendCards);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
