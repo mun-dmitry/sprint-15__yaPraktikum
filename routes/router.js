@@ -13,11 +13,7 @@ const urlValidationHelper = require('../middlewares/urlValidationHelper');
 
 router.get('/users', sendUsers);
 
-router.get('/users/:userId', celebrate({
-  params: Joi.object().keys({
-    userId: Joi.objectId(),
-  }),
-}), sendUserById);
+router.get('/users/me', sendUserById);
 
 router.patch('/users/me', celebrate({
   body: Joi.object().keys({
