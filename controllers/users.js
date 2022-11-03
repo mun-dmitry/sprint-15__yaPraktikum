@@ -14,7 +14,7 @@ const sendUsers = (req, res, next) => {
 };
 
 const sendUserById = (req, res, next) => {
-  User.findById(req.params.userId)
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFoundError('User not found');
@@ -126,11 +126,7 @@ const login = (req, res, next) => {
         JWT_SECRET,
         { expiresIn: '7d' },
       );
-      res.cookie('jwt', token, {
-        maxAge: 7 * 24 * 3600000,
-        httpOnly: true,
-      })
-        .end();
+      res.send({ token, id: user._id });
     })
     .catch(next);
 };
